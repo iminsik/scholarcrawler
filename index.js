@@ -3,9 +3,15 @@ const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
 const { convertOnClickUrl } = require('./utilities/urlConverter');
 
+const orgCodeFiles = [
+    { code: '11816294095661060495', name: 'ucberkeley' },
+    { code: '14108176128635076915', name: 'ucla'}
+];
+
+const index = 1;
 const domain = 'https://scholar.google.com';
-const seedPath = `/citations?view_op=view_org&hl=en&org=11816294095661060495`;
-const outFileName = './outfiles/ucberkeley.csv';
+const seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
+const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 const interval = 1500;
 
 const retrieve10Page = (outFileName, path, counter, maxCount, userCounter) => {
