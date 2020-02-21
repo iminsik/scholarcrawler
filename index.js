@@ -61,7 +61,7 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             ++userCounter;
         });
 
-        let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]);
+        let pathNext = convertOnClickUrl(buttonNext.attributes.onclick);
 
         // meaning the second attribute is not onclick event handler. 
         // reached the end of pages.
