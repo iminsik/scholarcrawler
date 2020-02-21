@@ -57,7 +57,7 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
 
         const articleResponses = await Promise.all(articlePromises);
         articleResponses.forEach(({ name, affiliate, emailDomain, keywords, articles }) => {
-            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}/${article.publisher}`)}"\n`)
+            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}(${article.publisher})`).join(', ')}"\n`)
             ++userCounter;
         });
 
