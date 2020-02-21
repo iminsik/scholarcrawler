@@ -55,10 +55,14 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             return { name, affiliate, emailDomain, keywords, articles };
         });
 
-        const articleResponses = await Promise.all(articlePromises);
-        articleResponses.forEach(({ name, affiliate, emailDomain, keywords, articles }) => {
+        const articleFetch = async (ariticlePromises) => {
+            const { name, affiliate, emailDomain, keywords, articles } = await articlePromises[0];
             appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}(${article.publisher})`).join(', ')}"\n`)
             ++userCounter;
+            articlePromises.shift();
+            if (articlePromises.length > 0) {
+                setTimeout(() => articleFetch(ariticlePromises), interval);
+            }
         });
 
         let pathNext = convertOnClickUrl(buttonNext.attributes.onclick);
