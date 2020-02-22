@@ -6,12 +6,11 @@ function convertOnClickUrl(onClickUrl) {
             .replace(/'"$/g, '');
 }
 
-function getRandomInterval() {
-    const rand = (Math.floor(Math.random() * 5) + 1); // 1 - 5 
-    return rand * 1000; 
+function getRandomArbitrary(min, max) {
+    return (Math.random() * (max - min) + min) * 100;
 }
 
 module.exports = {
     convertOnClickUrl,
-    getRandomInterval
+    getRandomArbitrary
 };

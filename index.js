@@ -1,7 +1,8 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
-const { convertOnClickUrl, getRandomInterval } = require('./utilities/urlConverter');
+const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
+const MIN = 15, MAX = 20;
 
 const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
@@ -62,7 +63,7 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             ++userCounter;
             articlePromises.shift();
             if (articlePromises.length > 0) {
-                setTimeout(() => articleFetch(ariticlePromises), getRandomInterval());
+                setTimeout(() => articleFetch(ariticlePromises), getRandomArbitrary(MIN, MAX));
             }
             else {
                 // The second attribute is not onclick event handle means it reached the end of pages.
@@ -73,10 +74,10 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
                         const univ = orgCodeFiles[univOfCounter];
                         pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
                         outFileName = `./outfiles/${univ.name}.csv`;
-                        setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomInterval());
+                        setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                     }
                 } else {
-                    setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomInterval());
+                    setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                 }
             }
         };
