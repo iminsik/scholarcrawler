@@ -2,7 +2,10 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
+
 const MIN = 15, MAX = 20;
+const index = 0;
+const domain = 'https://scholar.google.com';
 
 const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
@@ -17,8 +20,6 @@ const orgCodeFiles = [
     { code: '6192028974562668508', name: 'ucsc' },
 ];
 
-const index = 0;
-const domain = 'https://scholar.google.com';
 const seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
 const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 
@@ -43,8 +44,13 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             const affiliate = user.querySelector('.gs_ai_aff');
             const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
             const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
+            let articleHtml = null;
 
-            const articleHtml = await (await fetch(`${domain}${name.attributes.href}`)).text();
+            try {
+                articleHtml = await (await fetch(`${domain}${name.attributes.href}`)).text();
+            } catch (error) {
+                console.log(`Failed fetching: `, `${domain}${name.attributes.href}`);
+            }
 
             const articleHtmlRoot = parse(articleHtml);
             const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
@@ -57,28 +63,40 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
 
         let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
 
-        const articleFetch = async (ariticlePromises) => {
-            const { name, affiliate, emailDomain, keywords, articles } = await articlePromises[0];
-            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}`).join(', ')}"\n`)
-            ++userCounter;
-            articlePromises.shift();
-            if (articlePromises.length > 0) {
-                setTimeout(() => articleFetch(ariticlePromises), getRandomArbitrary(MIN, MAX));
-            }
-            else {
-                // The second attribute is not onclick event handle means it reached the end of pages.
-                if (pathNext === 'aria-label="Next"') {
-                    ++univOfCounter;
-                    userCounter = 0;
-                    if (univOfCounter < univOfMaxCount) {
-                        const univ = orgCodeFiles[univOfCounter];
-                        pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
-                        outFileName = `./outfiles/${univ.name}.csv`;
+        const articleFetch = async (ariticlePromises, numOfTry) => {
+            try {
+                const { name, affiliate, emailDomain, keywords, articles } = await articlePromises[0];
+                appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}`).join(', ')}"\n`)
+                ++userCounter;
+                articlePromises.shift();
+                if (articlePromises.length > 0) {
+                    setTimeout(() => articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+                }
+                else {
+                    // The second attribute is not onclick event handle means it reached the end of pages.
+                    if (pathNext === 'aria-label="Next"') {
+                        ++univOfCounter;
+                        userCounter = 0;
+                        if (univOfCounter < univOfMaxCount) {
+                            const univ = orgCodeFiles[univOfCounter];
+                            pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
+                            outFileName = `./outfiles/${univ.name}.csv`;
+                            setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
+                        }
+                    } else {
                         setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                     }
-                } else {
-                    setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                 }
+            } catch (error) {
+                // try 3 times.
+                if (numOfTry > 2) {
+                    console.log(`Skip:`, `${domain}${name.attributes.href}`);
+                    articlePromises.shift();
+                    setTimeout(() => articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+                } else {
+                    console.log(`Retry fetching:`, `${domain}${name.attributes.href}`);
+                    setTimeout(() => articleFetch(ariticlePromises, numOfTry++), getRandomArbitrary(MIN, MAX));
+                } 
             }
         };
         await articleFetch(articlePromises);
