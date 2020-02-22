@@ -46,11 +46,7 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
             let articleHtml = null;
 
-            try {
-                articleHtml = await (await fetch(`${domain}${name.attributes.href}`)).text();
-            } catch (error) {
-                console.log(`Failed fetching: `, `${domain}${name.attributes.href}`);
-            }
+            articleHtml = await (await fetch(`${domain}${name.attributes.href}`)).text();
 
             const articleHtmlRoot = parse(articleHtml);
             const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
