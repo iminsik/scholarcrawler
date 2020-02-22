@@ -1,7 +1,7 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
-const { convertOnClickUrl } = require('./utilities/urlConverter');
+const { convertOnClickUrl, getRandomInterval } = require('./utilities/urlConverter');
 
 const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
@@ -20,7 +20,6 @@ const index = 0;
 const domain = 'https://scholar.google.com';
 const seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
 const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
-const interval = 1500;
 
 const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCounter) => {
     univOfCounter = univOfCounter || 0;
@@ -55,32 +54,33 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
             return { name, affiliate, emailDomain, keywords, articles };
         });
 
+        let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
+
         const articleFetch = async (ariticlePromises) => {
             const { name, affiliate, emailDomain, keywords, articles } = await articlePromises[0];
             appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}(${article.publisher})`).join(', ')}"\n`)
             ++userCounter;
             articlePromises.shift();
             if (articlePromises.length > 0) {
-                setTimeout(() => articleFetch(ariticlePromises), interval);
+                setTimeout(() => articleFetch(ariticlePromises), getRandomInterval());
             }
-        });
-
-        let pathNext = convertOnClickUrl(buttonNext.attributes.onclick);
-
-        // meaning the second attribute is not onclick event handler. 
-        // reached the end of pages.
-        if (pathNext === 'aria-label="Next"') {
-            ++univOfCounter;
-            userCounter = 0;
-            if (univOfCounter < univOfMaxCount) {
-                const univ = orgCodeFiles[univOfCounter];
-                pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
-                outFileName = `./outfiles/${univ.name}.csv`;
-                setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), interval);
+            else {
+                // The second attribute is not onclick event handle means it reached the end of pages.
+                if (pathNext === 'aria-label="Next"') {
+                    ++univOfCounter;
+                    userCounter = 0;
+                    if (univOfCounter < univOfMaxCount) {
+                        const univ = orgCodeFiles[univOfCounter];
+                        pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
+                        outFileName = `./outfiles/${univ.name}.csv`;
+                        setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomInterval());
+                    }
+                } else {
+                    setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomInterval());
+                }
             }
-        } else {
-            setTimeout(() =>retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), interval);
-        }
+        };
+        await articleFetch(articlePromises);
     });
 };
 
