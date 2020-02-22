@@ -59,7 +59,7 @@ const retrieve10Page = (outFileName, path, univOfCounter, univOfMaxCount, userCo
 
         const articleFetch = async (ariticlePromises) => {
             const { name, affiliate, emailDomain, keywords, articles } = await articlePromises[0];
-            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}(${article.publisher})`).join(', ')}"\n`)
+            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}`).join(', ')}"\n`)
             ++userCounter;
             articlePromises.shift();
             if (articlePromises.length > 0) {
