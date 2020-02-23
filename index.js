@@ -55,7 +55,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
 
-    const articleFetch = async (ariticles, numOfTry) => {
+    const articleFetch = async (articles, numOfTry) => {
         const { name, affiliate, emailDomain, keywords, articlePath } = articles[0];
         try {
             const articleResponse = await fetch(`${domain}${articlePath}`);
@@ -64,12 +64,12 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
             const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
 
-            const articles = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
-            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}`).join(', ')}"\n`)
+            const articleInfos = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
+            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articleInfos.map(article => `${article.title}`).join(', ')}"\n`)
             ++userCounter;
-            articles.shift();
             if (articles.length > 0) {
-                setTimeout(async () => await articleFetch(ariticles, 0), getRandomArbitrary(MIN, MAX));
+                articles.shift();
+                setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
             }
             else {
                 // The second attribute is not onclick event handle means it reached the end of pages.
@@ -94,11 +94,11 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                 console.warning(message);
                 appendToFile(logFileName, message);
                 articles.shift();
-                setTimeout(async () => await articleFetch(ariticles, 0), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
             } else {
                 ++numOfTry;
                 console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
-                setTimeout(async () => await articleFetch(ariticles, numOfTry), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
             } 
         }
     };
