@@ -4,7 +4,7 @@ const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 8;
+const index = 9;
 const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
@@ -36,7 +36,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     }
 
     // TODO: how to handle retry in fetching a list?
-    console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ''), path);
+    console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ' '), path);
     const responseProfiles = await fetch(`${domain}${path}`);
     const html = await responseProfiles.text();
 
