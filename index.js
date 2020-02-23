@@ -33,7 +33,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     }
 
     // TODO: how to handle retry in fetching a list?
-    console.log(orgCodeFiles[univOfCounter].name, userCounter, path);
+    console.log(univOfCounter, orgCodeFiles[univOfCounter].name, userCounter, path);
     const responseProfiles = await fetch(`${domain}${path}`);
     const html = await responseProfiles.text();
 
