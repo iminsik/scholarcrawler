@@ -53,8 +53,8 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
 
     const articleFetch = async (ariticlePromises, numOfTry) => {
+        const { name, affiliate, emailDomain, keywords, articlePromise } = articlePromises[0];
         try {
-            const { name, affiliate, emailDomain, keywords, articlePromise } = articlePromises[0];
             const articleResponse = await articlePromise;
             const articleHtml = await articleResponse.text();
             const articleHtmlRoot = parse(articleHtml);
@@ -66,7 +66,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             ++userCounter;
             articlePromises.shift();
             if (articlePromises.length > 0) {
-                setTimeout(() => articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
             }
             else {
                 // The second attribute is not onclick event handle means it reached the end of pages.
