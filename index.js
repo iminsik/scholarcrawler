@@ -89,10 +89,11 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             if (numOfTry > 2) {
                 console.log(`Skip:`, `${domain}${name.attributes.href}`);
                 articlePromises.shift();
-                setTimeout(() => articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
             } else {
+                ++numOfTry;
                 console.log(`Retry fetching:`, `${domain}${name.attributes.href}`);
-                setTimeout(() => articleFetch(ariticlePromises, numOfTry++), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(ariticlePromises, numOfTry), getRandomArbitrary(MIN, MAX));
             } 
         }
     };
