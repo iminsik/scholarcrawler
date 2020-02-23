@@ -4,7 +4,7 @@ const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 6;
+const index = 7;
 const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
@@ -23,6 +23,7 @@ const orgCodeFiles = [
 
 const seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
 const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
+const logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
 
 const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter) => {
     univOfCounter = univOfCounter || 0;
@@ -31,6 +32,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     if (userCounter === 0) {
         resetFile(outFileName);    
+        resetFile(logFileName);
     }
 
     // TODO: how to handle retry in fetching a list?
@@ -88,7 +90,9 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
         catch (error) {
             // try 3 times.
             if (numOfTry > 2) {
-                console.log(`Skip:`, `${domain}${name.attributes.href}`);
+                const message = `Skip: ${domain}${name.attributes.href}`;
+                console.log(message);
+                appendToFile(logFileName, message);
                 articlePromises.shift();
                 setTimeout(async () => await articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
             } else {
