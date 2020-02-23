@@ -56,50 +56,50 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
 
     const articleFetch = async (articles, numOfTry) => {
-        const { name, affiliate, emailDomain, keywords, articlePath } = articles[0];
-        try {
-            const articleResponse = await fetch(`${domain}${articlePath}`);
-            const articleHtml = await articleResponse.text();
-            const articleHtmlRoot = parse(articleHtml);
-            const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
-            const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
-
-            const articleInfos = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
-            appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articleInfos.map(article => `${article.title}`).join(', ')}"\n`)
-            ++userCounter;
-            if (articles.length > 0) {
-                articles.shift();
-                setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
-            }
-            else {
-                // The second attribute is not onclick event handle means it reached the end of pages.
-                if (pathNext === 'aria-label="Next"') {
-                    ++univOfCounter;
-                    userCounter = 0;
-                    if (univOfCounter < univOfMaxCount) {
-                        const univ = orgCodeFiles[univOfCounter];
-                        pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
-                        outFileName = `./outfiles/${univ.name}.csv`;
-                        setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
-                    }
-                } else {
+        if (articles.length === 0) {
+            // The second attribute is not onclick event handle means it reached the end of pages.
+            if (pathNext === 'aria-label="Next"') {
+                ++univOfCounter;
+                userCounter = 0;
+                if (univOfCounter < univOfMaxCount) {
+                    const univ = orgCodeFiles[univOfCounter];
+                    pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
+                    outFileName = `./outfiles/${univ.name}.csv`;
                     setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                 }
+            } else {
+                setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
             }
         }
-        catch (error) {
-            // try 3 times.
-            if (numOfTry > 2) {
-                const message = `Skip with ${numOfTry} times: ${domain}${name.attributes.href}`;
-                console.warning(message);
-                appendToFile(logFileName, message);
+        else {
+            const { name, affiliate, emailDomain, keywords, articlePath } = articles[0];
+            try {
+                const articleResponse = await fetch(`${domain}${articlePath}`);
+                const articleHtml = await articleResponse.text();
+                const articleHtmlRoot = parse(articleHtml);
+                const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
+                const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
+
+                const articleInfos = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
+                appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articleInfos.map(article => `${article.title}`).join(', ')}"\n`)
+                ++userCounter;
                 articles.shift();
                 setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
-            } else {
-                ++numOfTry;
-                console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
-                setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
-            } 
+            }
+            catch (error) {
+                // try 3 times.
+                if (numOfTry > 2) {
+                    const message = `Skip with ${numOfTry} times: ${domain}${name.attributes.href}`;
+                    console.warning(message);
+                    appendToFile(logFileName, message);
+                    articles.shift();
+                    setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
+                } else {
+                    ++numOfTry;
+                    console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
+                    setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
+                } 
+            }
         }
     };
     await articleFetch(articles, 0);
