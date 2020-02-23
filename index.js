@@ -1,5 +1,5 @@
 const fs = require('fs');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
@@ -37,8 +37,8 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     // TODO: how to handle retry in fetching a list?
     console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ' '), path);
-    const responseProfiles = await fetch(`${domain}${path}`);
-    const html = await responseProfiles.text();
+    const profiles = await axios(`${domain}${path}`);
+    const html = profiles.data;
 
     const root = parse(html);
     const buttonNext = root.querySelector('.gs_btnPR');
@@ -49,9 +49,8 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
         const affiliate = user.querySelector('.gs_ai_aff');
         const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
         const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
-        const articleUrl = `${domain}${name.attributes.href}`;
-        const articlePromise = fetch(articleUrl);
-        return { name, affiliate, emailDomain, keywords, articleUrl, articlePromise };
+        const articlePromise = axios(`${domain}${name.attributes.href}`);
+        return { name, affiliate, emailDomain, keywords, articlePromise };
     });
 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
@@ -73,10 +72,9 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             }
         }
         else {
-            const { name, affiliate, emailDomain, keywords, articleUrl, articlePromise } = articles[0];
+            const { name, affiliate, emailDomain, keywords, articlePromise } = articles[0];
             try {
-                const articleResponse = await articlePromise;
-                const articleHtml = await articleResponse.text();
+                const articleHtml = (await articlePromise).data;
                 const articleHtmlRoot = parse(articleHtml);
                 const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
                 const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
@@ -98,7 +96,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                 } else {
                     ++numOfTry;
                     console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
-                    articles[0].articlePromise = fetch(`${articles[0].articleUrl}`);
+                    articles[0].articlePromise = axios(`${error.config.url}`);
                     setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
                 } 
             }
