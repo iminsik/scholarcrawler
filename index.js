@@ -5,6 +5,7 @@ const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConver
 
 const MIN = 15, MAX = 20;
 const index = 6;
+const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
 const orgCodeFiles = [
@@ -116,4 +117,4 @@ function resetFile(filename) {
     }
 }
 
-retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, 0);
+retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, userCounter);
