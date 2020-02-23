@@ -4,7 +4,7 @@ const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 7;
+const index = 8;
 const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
@@ -44,21 +44,21 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     const buttonNext = root.querySelector('.gs_btnPR');
     const users = root.querySelectorAll('.gsc_1usr');
 
-    const articlePromises = users.map((user) => {
+    const articles = users.map((user) => {
         const name = user.querySelector('.gs_ai_name a');
         const affiliate = user.querySelector('.gs_ai_aff');
         const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
         const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
-        const articlePromise = fetch(`${domain}${name.attributes.href}`)
-        return { name, affiliate, emailDomain, keywords, articlePromise };
+        const articlePath = `${name.attributes.href}`;
+        return { name, affiliate, emailDomain, keywords, articlePath };
     });
 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
 
-    const articleFetch = async (ariticlePromises, numOfTry) => {
-        const { name, affiliate, emailDomain, keywords, articlePromise } = articlePromises[0];
+    const articleFetch = async (ariticles, numOfTry) => {
+        const { name, affiliate, emailDomain, keywords, articlePath } = articles[0];
         try {
-            const articleResponse = await articlePromise;
+            const articleResponse = await fetch(`${domain}${articlePath}`);
             const articleHtml = await articleResponse.text();
             const articleHtmlRoot = parse(articleHtml);
             const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
@@ -67,9 +67,9 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             const articles = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
             appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articles.map(article => `${article.title}`).join(', ')}"\n`)
             ++userCounter;
-            articlePromises.shift();
-            if (articlePromises.length > 0) {
-                setTimeout(async () => await articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+            articles.shift();
+            if (articles.length > 0) {
+                setTimeout(async () => await articleFetch(ariticles, 0), getRandomArbitrary(MIN, MAX));
             }
             else {
                 // The second attribute is not onclick event handle means it reached the end of pages.
@@ -90,19 +90,19 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
         catch (error) {
             // try 3 times.
             if (numOfTry > 2) {
-                const message = `Skip: ${domain}${name.attributes.href}`;
-                console.log(message);
+                const message = `Skip with ${numOfTry} times: ${domain}${name.attributes.href}`;
+                console.warning(message);
                 appendToFile(logFileName, message);
-                articlePromises.shift();
-                setTimeout(async () => await articleFetch(ariticlePromises, 0), getRandomArbitrary(MIN, MAX));
+                articles.shift();
+                setTimeout(async () => await articleFetch(ariticles, 0), getRandomArbitrary(MIN, MAX));
             } else {
                 ++numOfTry;
-                console.log(`Retry fetching:`, `${domain}${name.attributes.href}`);
-                setTimeout(async () => await articleFetch(ariticlePromises, numOfTry), getRandomArbitrary(MIN, MAX));
+                console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
+                setTimeout(async () => await articleFetch(ariticles, numOfTry), getRandomArbitrary(MIN, MAX));
             } 
         }
     };
-    await articleFetch(articlePromises);
+    await articleFetch(articles, 0);
 };
 
 function appendToFile(filename, content) {
