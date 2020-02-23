@@ -4,7 +4,7 @@ const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 4;
+const index = 6;
 const domain = 'https://scholar.google.com';
 
 const orgCodeFiles = [
@@ -33,7 +33,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     }
 
     // TODO: how to handle retry in fetching a list?
-    console.log(univOfCounter, userCounter, path);
+    console.log(orgCodeFiles[univOfCounter].name, userCounter, path);
     const responseProfiles = await fetch(`${domain}${path}`);
     const html = await responseProfiles.text();
 
@@ -55,7 +55,8 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     const articleFetch = async (ariticlePromises, numOfTry) => {
         try {
             const { name, affiliate, emailDomain, keywords, articlePromise } = articlePromises[0];
-            const articleHtml = await (await articlePromise).text();
+            const articleResponse = await articlePromise;
+            const articleHtml = await articleResponse.text();
             const articleHtmlRoot = parse(articleHtml);
             const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
             const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
