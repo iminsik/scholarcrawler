@@ -4,7 +4,7 @@ const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 9;
+const index = 0;
 const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
