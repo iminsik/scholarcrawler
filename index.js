@@ -58,7 +58,6 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     const articles = users.map((user) => {
         const name = user.querySelector('.gs_ai_name a');
-        const affiliate = user.querySelector('.gs_ai_aff');
         const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
         const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
         const articlePromise = axios(`${domain}${name.attributes.href}`);
@@ -84,11 +83,15 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             }
         }
         else {
-            const { name, affiliate, emailDomain, keywords, articlePromise } = articles[0];
+            const { name, emailDomain, keywords, articlePromise } = articles[0];
             try {
                 const response = await articlePromise;
                 const articleHtml = response.data;
                 const articleHtmlRoot = parse(articleHtml);
+                if (userCounter === 6) {
+                    debugger
+                }
+                const affiliateTitle = articleHtmlRoot.querySelector('div.gsc_prf_il').text;
                 const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
                 const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
 
@@ -96,7 +99,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                 const columns = [
                     userCounter.toString().escapeDoubleQuotes(),
                     name.text.escapeDoubleQuotes(),
-                    affiliate.text.escapeDoubleQuotes(),
+                    affiliateTitle.escapeDoubleQuotes(),
                     emailDomain.escapeDoubleQuotes(),
                     keywords.escapeDoubleQuotes(),
                     articleInfos.map(article => `${article.title.escapeDoubleQuotes()}`).join('###').escapeDoubleQuotes()
