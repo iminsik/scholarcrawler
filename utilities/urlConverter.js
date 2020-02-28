@@ -18,7 +18,7 @@ function escapeDoubleQuotes() {
 
 function appendToFile(filename, content) {
     try {
-        fs.appendFileSync(filename, content);
+        fs.appendFileSync(filename, content, 'utf8');
     } catch(err) {
         console.error(err);
     }
@@ -26,7 +26,7 @@ function appendToFile(filename, content) {
 
 function resetFile(filename) {
     try {
-        fs.writeFileSync(filename, '');
+        fs.writeFileSync(filename, '', 'utf8');
     } catch(err) {
         console.error(err);
     }

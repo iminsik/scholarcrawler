@@ -23,7 +23,7 @@ const orgCodeFiles = [
 
 let index = 0;
 let userCounter = 0;
-let seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
+let seedPath = `/citations?view_op=view_org&hl=en&oe=UTF8&org=${orgCodeFiles[index].code}`;
 
 if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== undefined) {
     seedPath = argv.url;
@@ -32,8 +32,8 @@ if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== u
     console.log("Resuming: ", argv.url, argv.index, argv.userCounter);
 }
 
-const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
-const logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
+let outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
+let logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
 
 const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter) => {
     univOfCounter = univOfCounter || 0;
