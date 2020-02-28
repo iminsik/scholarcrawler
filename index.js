@@ -61,7 +61,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
         const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
         const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
         const articlePromise = axios(`${domain}${name.attributes.href}`);
-        return { name, affiliate, emailDomain, keywords, articlePromise };
+        return { name, emailDomain, keywords, articlePromise };
     });
 
     let pathNext = convertOnClickUrl(buttonNext.rawAttrs.split(' ')[1]); 
