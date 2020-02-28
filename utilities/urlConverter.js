@@ -13,7 +13,7 @@ function getRandomArbitrary(min, max) {
 }
 
 function escapeDoubleQuotes() {
-    return this.replace('"', '""');
+    return this.replace(/"/gi, '""');
 }
 
 function appendToFile(filename, content) {

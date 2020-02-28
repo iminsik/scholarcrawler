@@ -121,7 +121,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                     affiliateTitle.escapeDoubleQuotes(),
                     emailDomain.escapeDoubleQuotes(),
                     keywords.escapeDoubleQuotes(),
-                    articleInfos.map(article => `${article.title.escapeDoubleQuotes()}`).join('###').escapeDoubleQuotes()
+                    articleInfos.map(article => `${article.title.escapeDoubleQuotes()}`).join('###')
                 ];
                 appendToFile(outFileName, `${columns.map(str => `"${str}"`).join(',')}\n`)
                 ++userCounter;
