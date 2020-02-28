@@ -31,10 +31,23 @@ function resetFile(filename) {
         console.error(err);
     }
 }
+
+function sanitize(path) {
+    const encodingASCII = '&oe=ASCII';
+    const encodingUTF8 = '&oe=UTF8';
+    const idx = path.indexOf(encodingASCII);
+    if (idx >= 0) {
+        return path.replace(encodingASCII, encodingUTF8);
+    } else {
+        return path + encodingUTF8;
+    }
+}
+
 module.exports = {
     convertOnClickUrl,
     getRandomArbitrary,
     escapeDoubleQuotes,
     appendToFile,
-    resetFile
+    resetFile,
+    sanitize
 };

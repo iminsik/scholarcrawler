@@ -1,7 +1,7 @@
 const axios = require('axios');
 const argv = require('yargs').argv;
 const { parse } = require('node-html-parser');
-const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile, resetFile } = require('./utilities/urlConverter');
+const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile, resetFile, sanitize } = require('./utilities/urlConverter');
 
 const MIN = 10, MAX = 15;
 const domain = 'https://scholar.google.com';
@@ -41,6 +41,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     univOfMaxCount = univOfMaxCount || 10000;
     userCounter = userCounter || 0;
     numOfTry = numOfTry || 0
+    path = sanitize(path);
 
     if (userCounter === 0) {
         resetFile(outFileName);    
