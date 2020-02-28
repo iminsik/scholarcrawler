@@ -1,10 +1,9 @@
 const axios = require('axios');
+const argv = require('yargs').argv;
 const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile, resetFile } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
-const index = 0;
-const userCounter = 0;
 const domain = 'https://scholar.google.com';
 
 String.prototype.escapeDoubleQuotes = escapeDoubleQuotes;
@@ -22,7 +21,17 @@ const orgCodeFiles = [
     { code: '6192028974562668508', name: 'ucsc' },
 ];
 
-const seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
+let index = 0;
+let userCounter = 0;
+let seedPath = `/citations?view_op=view_org&hl=en&org=${orgCodeFiles[index].code}`;
+
+if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== undefined) {
+    seedPath = argv.url;
+    index = argv.index;
+    userCounter = argv.userCounter;
+    console.log("Resuming: ", argv.url, argv.index, argv.userCounter);
+}
+
 const outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 const logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
 
@@ -75,7 +84,8 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
         else {
             const { name, affiliate, emailDomain, keywords, articlePromise } = articles[0];
             try {
-                const articleHtml = (await articlePromise).data;
+                const response = await articlePromise;
+                const articleHtml = response.data;
                 const articleHtmlRoot = parse(articleHtml);
                 const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
                 const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
