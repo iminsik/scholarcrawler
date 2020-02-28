@@ -36,10 +36,11 @@ let outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 let logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
 const headers = `"Index","Name","Title","Email Domain","Area","Article Titles (Delimited by ###)"`;
 
-const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter) => {
+const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter, numOfTry) => {
     univOfCounter = univOfCounter || 0;
     univOfMaxCount = univOfMaxCount || 10000;
     userCounter = userCounter || 0;
+    numOfTry = numOfTry || 0
 
     if (userCounter === 0) {
         resetFile(outFileName);    
@@ -49,9 +50,27 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     // TODO: how to handle retry in fetching a list?
     console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ' '), path);
-    const profiles = await axios(`${domain}${path}`);
-    const html = profiles.data;
+    let profiles = null;
+    try {
+        profiles = await axios(`${domain}${path}`);
+    }
+    catch (err) {
+        // try 3 times.
+        if (numOfTry > 2) {
+            const message = `Failed with ${numOfTry} times: ${path}, and EXIT program.`;
+            console.warn(message);
+            appendToFile(logFileName, message);
+        } else {
+            ++numOfTry;
+            const message = `Retry fetching in ${numOfTry} time: ${path}`;
+            console.warn(message);
+            appendToFile(logFileName, message);
+            setTimeout(async () => await retrieve10Page(outFileName, path, univOfCounter, univOfMaxCount, userCounter, numOfTry), getRandomArbitrary(MIN, MAX));
+        } 
+        return;
+    }
 
+    const html = profiles.data;
     const root = parse(html);
     const buttonNext = root.querySelector('.gs_btnPR');
     const users = root.querySelectorAll('.gsc_1usr');
@@ -112,14 +131,16 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             catch (error) {
                 // try 3 times.
                 if (numOfTry > 2) {
-                    const message = `Skip with ${numOfTry} times: ${domain}${name.attributes.href}`;
+                    const message = `Skip with ${numOfTry} times: ${name.attributes.href}`;
                     console.warn(message);
                     appendToFile(logFileName, message);
                     articles.shift();
                     setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
                 } else {
                     ++numOfTry;
-                    console.warn(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
+                    const message = `Retry fetching in ${numOfTry} time: ${name.attributes.href}`;
+                    console.warn(message);
+                    appendToFile(logFileName, message);
                     articles[0].articlePromise = axios(`${error.config.url}`);
                     setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
                 } 
@@ -129,4 +150,4 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     await articleFetch(articles, 0);
 };
 
-retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, userCounter);
+retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, userCounter, 0);
