@@ -3,7 +3,7 @@ const argv = require('yargs').argv;
 const { parse } = require('node-html-parser');
 const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile, resetFile } = require('./utilities/urlConverter');
 
-const MIN = 15, MAX = 20;
+const MIN = 10, MAX = 15;
 const domain = 'https://scholar.google.com';
 
 String.prototype.escapeDoubleQuotes = escapeDoubleQuotes;
