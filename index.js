@@ -1,12 +1,13 @@
-const fs = require('fs');
 const axios = require('axios');
 const { parse } = require('node-html-parser');
-const { convertOnClickUrl, getRandomArbitrary } = require('./utilities/urlConverter');
+const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile, resetFile } = require('./utilities/urlConverter');
 
 const MIN = 15, MAX = 20;
 const index = 0;
 const userCounter = 0;
 const domain = 'https://scholar.google.com';
+
+String.prototype.escapeDoubleQuotes = escapeDoubleQuotes;
 
 const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
@@ -80,7 +81,15 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                 const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
 
                 const articleInfos = articleTitles.map((title, index) => ({title, publisher: articlePublishes[index]}));
-                appendToFile(outFileName, `"${userCounter}", "${name.text}", "${affiliate.text}", "${emailDomain}", "${keywords}", "${articleInfos.map(article => `${article.title}`).join(', ')}"\n`)
+                const columns = [
+                    userCounter.toString().escapeDoubleQuotes(),
+                    name.text.escapeDoubleQuotes(),
+                    affiliate.text.escapeDoubleQuotes(),
+                    emailDomain.escapeDoubleQuotes(),
+                    keywords.escapeDoubleQuotes(),
+                    articleInfos.map(article => `${article.title.escapeDoubleQuotes()}`).join('###').escapeDoubleQuotes()
+                ];
+                appendToFile(outFileName, `${columns.map(str => `"${str}"`).join(',')}\n`)
                 ++userCounter;
                 articles.shift();
                 setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
@@ -104,21 +113,5 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     };
     await articleFetch(articles, 0);
 };
-
-function appendToFile(filename, content) {
-    try {
-        fs.appendFileSync(filename, content);
-    } catch(err) {
-        console.error(err);
-    }
-}
-
-function resetFile(filename) {
-    try {
-        fs.writeFileSync(filename, '');
-    } catch(err) {
-        console.error(err);
-    }
-}
 
 retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, userCounter);
