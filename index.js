@@ -24,11 +24,13 @@ const orgCodeFiles = [
 let index = 0;
 let userCounter = 0;
 let seedPath = `/citations?view_op=view_org&hl=en&oe=UTF8&org=${orgCodeFiles[index].code}`;
+let univMaxCount = orgCodeFiles.length;
 
-if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== undefined) {
+if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== undefined && argv.univMaxCount) {
     seedPath = argv.url;
     index = argv.index;
     userCounter = argv.userCounter;
+    univMaxCount = argv.univMaxCount;
     console.log("Resuming: ", argv.url, argv.index, argv.userCounter);
 }
 
@@ -36,9 +38,9 @@ let outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 let logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
 const headers = `"Index","Name","Title","Email Domain","Area","Article Titles (Delimited by ###)"`;
 
-const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter, numOfTry) => {
+const retrieve10Page = async (outFileName, path, univOfCounter, univMaxCount, userCounter, numOfTry) => {
     univOfCounter = univOfCounter || 0;
-    univOfMaxCount = univOfMaxCount || 10000;
+    univMaxCount = univMaxCount || 0;
     userCounter = userCounter || 0;
     numOfTry = numOfTry || 0
     path = sanitize(path);
@@ -66,7 +68,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             const message = `Retry fetching in ${numOfTry} time: ${path}`;
             console.warn(message);
             appendToFile(logFileName, message);
-            setTimeout(async () => await retrieve10Page(outFileName, path, univOfCounter, univOfMaxCount, userCounter, numOfTry), getRandomArbitrary(MIN, MAX));
+            setTimeout(async () => await retrieve10Page(outFileName, path, univOfCounter, univMaxCount, userCounter, numOfTry), getRandomArbitrary(MIN, MAX));
         } 
         return;
     }
@@ -92,14 +94,14 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
             if (pathNext === 'aria-label="Next"') {
                 ++univOfCounter;
                 userCounter = 0;
-                if (univOfCounter < univOfMaxCount) {
+                if (univOfCounter < univMaxCount) {
                     const univ = orgCodeFiles[univOfCounter];
                     pathNext = `/citations?view_op=view_org&hl=en&org=${univ.code}`;
                     outFileName = `./outfiles/${univ.name}.csv`;
-                    setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
+                    setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
                 }
             } else {
-                setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univOfMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await retrieve10Page(outFileName, pathNext, univOfCounter, univMaxCount, userCounter), getRandomArbitrary(MIN, MAX));
             }
         }
         else {
@@ -151,4 +153,4 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
     await articleFetch(articles, 0);
 };
 
-retrieve10Page(outFileName, seedPath, index, orgCodeFiles.length, userCounter, 0);
+retrieve10Page(outFileName, seedPath, index, univMaxCount, userCounter, 0);
