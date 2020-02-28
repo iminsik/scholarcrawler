@@ -108,13 +108,13 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
                 // try 3 times.
                 if (numOfTry > 2) {
                     const message = `Skip with ${numOfTry} times: ${domain}${name.attributes.href}`;
-                    console.warning(message);
+                    console.warn(message);
                     appendToFile(logFileName, message);
                     articles.shift();
                     setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
                 } else {
                     ++numOfTry;
-                    console.warning(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
+                    console.warn(`Retry fetching in ${numOfTry} time:`, `${domain}${name.attributes.href}`);
                     articles[0].articlePromise = axios(`${error.config.url}`);
                     setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
                 } 
