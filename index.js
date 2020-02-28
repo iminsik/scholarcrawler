@@ -34,6 +34,7 @@ if (argv.url !== undefined && argv.index !== undefined && argv.userCounter !== u
 
 let outFileName = `./outfiles/${orgCodeFiles[index].name}.csv`;
 let logFileName = `./outfiles/${orgCodeFiles[index].name}.log`;
+const headers = `"Index","Name","Title","Email Domain","Area","Article Titles (Delimited by ###)"`;
 
 const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, userCounter) => {
     univOfCounter = univOfCounter || 0;
@@ -42,6 +43,7 @@ const retrieve10Page = async (outFileName, path, univOfCounter, univOfMaxCount, 
 
     if (userCounter === 0) {
         resetFile(outFileName);    
+        appendToFile(outFileName, `${headers}\n`)
         resetFile(logFileName);
     }
 
