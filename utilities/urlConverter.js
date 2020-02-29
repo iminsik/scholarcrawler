@@ -12,6 +12,10 @@ function getRandomArbitrary(min, max) {
     return (Math.random() * (max - min) + min) * 100;
 }
 
+function removeQuotes() {
+    return this.replace(/^"/i, '').replace(/",$/i, '').replace(/"$/i, '');
+}
+
 function escapeDoubleQuotes() {
     return this.replace(/"/gi, '""');
 }
@@ -43,11 +47,47 @@ function sanitize(path) {
     }
 }
 
+function spreadTitles() {
+    const titlesPlaceHolder = Array.from({length: 25}, (v, i) => 'NA');
+    let position = 0, idx = -1;
+    let row = this;
+
+    do {
+        idx = row.search(/[^"]",/);
+        if (idx === -1) {
+            idx = row.search(/^"",/);
+        }
+        let cell = "";
+        if (idx === -1) {
+            const titles = row.removeQuotes().split('###');
+            titles.forEach((title, idx) => {
+                if (position > 24) {
+                    console.warn('position cannot be greater than 24');
+                }
+                titlesPlaceHolder[position] = title;
+                ++position;
+            });
+        } else {
+            cell = row.substring(0, idx+1).removeQuotes();
+            titlesPlaceHolder[position] = cell;
+        }
+        row = row.substring(idx+3, row.length);
+        ++position;
+    } while (idx !== -1);
+
+    return titlesPlaceHolder;
+}
+String.prototype.removeQuotes = removeQuotes;
+String.prototype.escapeDoubleQuotes = escapeDoubleQuotes;
+String.prototype.spreadTitles = spreadTitles;
+
 module.exports = {
     convertOnClickUrl,
     getRandomArbitrary,
     escapeDoubleQuotes,
+    removeQuotes,
     appendToFile,
     resetFile,
-    sanitize
+    sanitize,
+    spreadTitles
 };

@@ -6,8 +6,6 @@ const { convertOnClickUrl, getRandomArbitrary, escapeDoubleQuotes, appendToFile,
 const MIN = 10, MAX = 15;
 const domain = 'https://scholar.google.com';
 
-String.prototype.escapeDoubleQuotes = escapeDoubleQuotes;
-
 const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
     { code: '14108176128635076915', name: 'ucla'},
