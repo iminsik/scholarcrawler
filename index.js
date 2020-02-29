@@ -10,7 +10,7 @@ const orgCodeFiles = [
     { code: '11816294095661060495', name: 'ucberkeley' },
     { code: '14108176128635076915', name: 'ucla'},
     { code: '7549334305653538480', name: 'ucsd' },
-    { code: '21288157106126462', name: 'ucdavid' },
+    { code: '21288157106126462', name: 'ucdavis' },
     { code: '1925309612018474740', name: 'ucirvine' },
     { code: '16278580130520462922', name: 'ucmerced' },
     { code: '9458886787299642237', name: 'ucriverside' },
