@@ -46,20 +46,39 @@ function sanitize(path) {
         return path + encodingUTF8;
     }
 }
+function isTrueDelimiter(row, idx) {
+    let countOfDoubleQuotes = 0;
+
+    while(idx >= 0 && row[idx] === `"`) {
+        ++countOfDoubleQuotes;
+        --idx;
+    }
+
+    return countOfDoubleQuotes % 2 === 0;
+}
 
 function spreadTitles() {
     const titlesPlaceHolder = Array.from({length: 25}, (v, i) => 'NA');
     let position = 0, idx = -1;
     let row = this;
+    let cell = "";
+    row = row.replace(/^"/, '').replace(/"$/, '');
 
     do {
-        idx = row.search(/[^"]",/);
-        if (idx === -1) {
-            idx = row.search(/^"",/);
+        idx = row.search(/","/);
+
+        //TODO: can we make it a mdule?
+        while (idx !== -1) {
+            if (isTrueDelimiter(row, idx-1)) {
+                break;
+            }
+            const currentSubstr = row.substring(idx+3);
+            const localIdx = currentSubstr.search(/","/);
+            idx = idx+3+localIdx;
         }
-        let cell = "";
+
         if (idx === -1) {
-            const titles = row.removeQuotes().split('###');
+            const titles = row.split('###');
             titles.forEach((title, idx) => {
                 if (position > 24) {
                     console.warn('position cannot be greater than 24');
@@ -68,7 +87,7 @@ function spreadTitles() {
                 ++position;
             });
         } else {
-            cell = row.substring(0, idx+1).removeQuotes();
+            cell = row.substring(0, idx);
             titlesPlaceHolder[position] = cell;
         }
         row = row.substring(idx+3, row.length);
