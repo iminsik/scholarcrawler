@@ -55,13 +55,14 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
     path = sanitize(path);
 
     if (userCounter === 0) {
+        console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ' '), path);
         resetFile(outFileName);
         appendToFile(outFileName, `${headers}\n`)
         resetFile(logFileName);
     }
 
     // TODO: how to handle retry in fetching a list?
-    console.log(univOfCounter, orgCodeFiles[univOfCounter].name, `${userCounter}`.padStart(4, ' '), path);
+    appendToFile(logFileName, `${ univOfCounter }, ${ orgCodeFiles[univOfCounter].name}, ${userCounter.toString().padStart(4, ' ')}, ${path}\n`)
     let profiles = null;
     try {
         profiles = await axios(`${domain}${path}`);
