@@ -16,6 +16,15 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "encodingTest.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/encodingTest.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "splitTitles.js",
             "skipFiles": [
                 "<node_internals>/**"

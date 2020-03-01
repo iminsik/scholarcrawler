@@ -91,7 +91,7 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
         const name = user.querySelector('.gs_ai_name a');
         const emailDomain = user.querySelector('.gs_ai_eml').text.replace('Verified email at ', '');
         const keywords = user.querySelectorAll('.gs_ai_int .gs_ai_one_int').map(kw => kw.text).join('/');
-        const articlePromise = axios(`${domain}${name.attributes.href}`);
+        const articlePromise = axios(`${domain}${name.attributes.href}&oe=UTF8`);
         return { name, emailDomain, keywords, articlePromise };
     });
 
@@ -119,9 +119,6 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
                 const response = await articlePromise;
                 const articleHtml = response.data;
                 const articleHtmlRoot = parse(articleHtml);
-                if (userCounter === 6) {
-                    debugger
-                }
                 const affiliateTitle = articleHtmlRoot.querySelector('div.gsc_prf_il').text;
                 const articleTitles = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t a')].map(elm => elm.text);
                 const articlePublishes = [...articleHtmlRoot.querySelectorAll('td.gsc_a_t div.gs_gray')].filter((elm, idx) => idx % 2 === 1).map(elm => elm.text);
@@ -138,7 +135,7 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
                 appendToFile(outFileName, `${columns.map(str => `"${str}"`).join(',')}\n`)
                 ++userCounter;
                 articles.shift();
-                setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
+                setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(5, 10));
             }
             catch (error) {
                 // try 3 times.
@@ -147,14 +144,14 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
                     console.warn(message);
                     appendToFile(logFileName, `${message}\n`);
                     articles.shift();
-                    setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(MIN, MAX));
+                    setTimeout(async () => await articleFetch(articles, 0), getRandomArbitrary(5, 10));
                 } else {
                     ++numOfTry;
                     const message = `Retry fetching in ${numOfTry} time: ${name.attributes.href}`;
                     console.warn(message);
                     appendToFile(logFileName, `${message}\n`);
                     articles[0].articlePromise = axios(`${error.config.url}`);
-                    setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(MIN, MAX));
+                    setTimeout(async () => await articleFetch(articles, numOfTry), getRandomArbitrary(5, 10));
                 } 
             }
         }
