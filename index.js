@@ -1,3 +1,4 @@
+const allSettled = require('promise.allsettled');
 const axios = require('axios');
 const argv = require('yargs').argv;
 const { parse } = require('node-html-parser');
@@ -161,3 +162,25 @@ const retrieve10Page = async (outFileName, logFileName, path, univOfCounter, uni
 };
 
 retrieve10Page(outFileName, logFileName, seedPath, index, univMaxCount, userCounter, 0);
+
+// const test = async () => {
+//     const promises = Array.from([1]).forEach(async (elm) => { 
+//         try {
+//             await axios('https://wwy.jjjjjjjjjjjjj.com');
+//         } 
+//         catch(error) {
+//             console.warn('Caught early');       
+//         }
+//     });
+// };
+
+// const test2 = async () => {
+//     try {
+//         const promises = await allSettled(Array.from([1,2,3]).map(() => axios('https://wwy.jjjjjjjjjjjjj.com')));
+//         console.warn('...');
+//     } catch (errors) {
+//         console.warn('Caught early');
+//     }
+// };
+
+// test2();
